@@ -1,0 +1,6 @@
+[package]
+name = "atsu-shelf"
+version = "0.1.0"
+edition = "2024"
+description = "Draws recent atsu.moe reading as a looping pixel-art bookshelf GIF"
+license = "MIT"

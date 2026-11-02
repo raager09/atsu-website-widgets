@@ -2,5 +2,9 @@
 name = "atsu-shelf"
 version = "0.1.0"
 edition = "2024"
-description = "Draws recent atsu.moe reading as a looping pixel-art bookshelf GIF"
+description = "Embeddable widget of your recent atsu.moe reading"
 license = "MIT"
+
+[dependencies]
+clap = { version = "4", default-features = false, features = ["std", "derive", "help", "usage", "error-context"] }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }

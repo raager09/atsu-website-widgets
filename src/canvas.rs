@@ -6,8 +6,6 @@ pub const fn rgb(hex: u32) -> Rgb {
     [(hex >> 16) as u8, (hex >> 8) as u8, hex as u8]
 }
 
-/// An RGB pixel buffer. Drawing outside it is silently clipped, so callers can
-/// position things partly off-canvas without checking.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Canvas {
     width: i32,
@@ -56,8 +54,6 @@ impl Canvas {
         }
     }
 
-    /// Blends `color` over the pixel. Alpha snaps to eighths, so any one pair
-    /// of colors can only produce nine results, which keeps the palette small.
     pub fn blend(&mut self, x: i32, y: i32, color: Rgb, alpha: f32) {
         let Some(i) = self.index(x, y) else { return };
         let level = (alpha.clamp(0.0, 1.0) * 8.0).round() as u16;

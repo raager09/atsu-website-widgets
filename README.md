@@ -2,17 +2,13 @@
 
 `atsu-shelf` turns your recent [atsu.moe](https://atsu.moe) reading into a row of cover cards for your GitHub profile or your own website.
 
-![A demo shelf of six invented series](embed/demo.svg)
-
-The titles and covers above are invented demo data.
-
 Not affiliated with atsu.moe or AniList. The widget shows your recent reading, including titles and chapters, to anyone who can see the page it's on.
 
 Reading from atsu.moe and the GitHub Action that refreshes the file are still being built. For now, `atsu-shelf draw --demo` writes the demo shelf.
 
 ## Embedding
 
-The widget is a single SVG file, `shelf.svg`, with its covers built in, so it works anywhere an image does.
+The widget is a single SVG file, with its covers built in, so it works anywhere an image does.
 
 ### In a GitHub README
 

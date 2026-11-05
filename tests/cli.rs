@@ -60,6 +60,55 @@ fn bad_flags_are_rejected() {
     }
 }
 
+fn login(args: &[&str], env: &[(&str, &str)]) -> Output {
+    let mut command = Command::new(env!("CARGO_BIN_EXE_atsu-shelf"));
+    command
+        .arg("login")
+        .args(args)
+        .env_remove("ATSU_CLIENT_ID")
+        .env_remove("ATSU_CLIENT_SECRET");
+    for (key, value) in env {
+        command.env(key, value);
+    }
+    command.output().unwrap()
+}
+
+#[test]
+fn login_needs_a_client_id() {
+    let result = login(&[], &[("ATSU_CLIENT_SECRET", "s3cret-value")]);
+    assert!(!result.status.success());
+    let stderr = String::from_utf8_lossy(&result.stderr);
+    assert!(stderr.contains("--client-id"), "{stderr}");
+}
+
+#[test]
+fn login_reads_the_secret_only_from_the_environment() {
+    for env in [&[][..], &[("ATSU_CLIENT_SECRET", "  ")][..]] {
+        let result = login(&["--client-id", "abc"], env);
+        assert_eq!(result.status.code(), Some(2));
+        let stderr = String::from_utf8_lossy(&result.stderr);
+        assert!(stderr.contains("ATSU_CLIENT_SECRET"), "{stderr}");
+        assert!(!stderr.contains("atsu.moe/oauth"), "{stderr}");
+    }
+    let flag = login(
+        &["--client-id", "abc", "--client-secret", "s3cret-value"],
+        &[],
+    );
+    assert!(!flag.status.success());
+    assert!(!String::from_utf8_lossy(&flag.stderr).contains("s3cret-value"));
+}
+
+#[test]
+fn login_help_hides_the_client_id_value() {
+    let result = login(&["--help"], &[("ATSU_CLIENT_ID", "my-private-id")]);
+    assert!(result.status.success());
+    let stdout = String::from_utf8_lossy(&result.stdout);
+    assert!(
+        stdout.contains("ATSU_CLIENT_ID") && !stdout.contains("my-private-id"),
+        "{stdout}"
+    );
+}
+
 #[test]
 fn live_mode_fails_clearly_until_it_is_built() {
     let result = run(&["draw"]);

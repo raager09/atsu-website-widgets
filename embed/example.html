@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>atsu-shelf example</title>
+<style>
+  :root {
+    --page: #ffffff;
+    --ink: #1f2328;
+    --muted: #59636e;
+    --accent: #e75480;
+    --line: #d1d9e0;
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --page: #16161d;
+    --ink: #ececf1;
+    --muted: #a3a3ae;
+    --accent: #ff8fb1;
+    --line: #34343f;
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  main {
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 48px 16px;
+  }
+  h1 {
+    margin: 0 0 4px;
+    font-size: 28px;
+  }
+  p {
+    margin: 0 0 24px;
+    color: var(--muted);
+  }
+  button {
+    margin-bottom: 32px;
+    padding: 6px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    cursor: pointer;
+  }
+  .reading {
+    --atsu-shelf-heading: var(--ink);
+    --atsu-shelf-title: var(--accent);
+  }
+</style>
+<main>
+  <h1>Hi, I read a lot of manga</h1>
+  <p>The shelf below is one SVG file. Its colours come from this page's CSS.</p>
+  <button type="button" id="theme">Switch to dark</button>
+  <section class="reading">
+    <img data-atsu-shelf src="demo.svg" alt="What I'm reading on atsu.moe">
+  </section>
+</main>
+<script src="atsu-shelf.js"></script>
+<script>
+  const button = document.getElementById("theme");
+  const apply = (dark) => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    button.textContent = dark ? "Switch to light" : "Switch to dark";
+  };
+  apply(location.hash === "#dark");
+  button.addEventListener("click", () => apply(document.documentElement.dataset.theme !== "dark"));
+</script>
+</html>

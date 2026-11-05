@@ -1,0 +1,83 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>atsu-shelf embed tests</title>
+<pre id="results">running</pre>
+<div id="host" style="--atsu-shelf-title:#e75480">
+  <img data-atsu-shelf src="demo.svg" alt="What I'm reading">
+</div>
+<div id="sink" hidden></div>
+<script src="atsu-shelf.js"></script>
+<script>
+  const NS = 'xmlns="http://www.w3.org/2000/svg"';
+  const STYLE = "<style>.atsu-shelf{--t:var(--atsu-shelf-title,#6e7681)}.atsu-shelf .t{fill:var(--t)}</style>";
+  const wrap = (body, style = STYLE) => `<svg ${NS} class="atsu-shelf" width="10" height="10">${style}${body}</svg>`;
+  const results = [];
+  const check = (name, ok) => results.push(`${ok ? "PASS" : "FAIL"} ${name}`);
+  const clean = (text) => {
+    const svg = atsuShelf.sanitize(text);
+    if (svg) document.getElementById("sink").append(svg);
+    return svg;
+  };
+
+  (async () => {
+    try {
+      const demo = clean(await (await fetch("demo.svg")).text());
+      check("renderer output is accepted", demo !== null);
+      check("cards survive", demo.querySelectorAll(".card").length === 6);
+      check("covers survive", demo.querySelectorAll("image").length === 5);
+      check("title text survives", demo.textContent.includes("Salt & Cinder"));
+      check("pills survive", demo.querySelectorAll("rect[fill]").length > 12);
+
+      const scoped = demo.querySelector("style").textContent;
+      check("styles are scoped to one widget", !/(^|\})\s*\.atsu-shelf[\s{.]/.test(scoped));
+      const other = clean(await (await fetch("demo.svg")).text());
+      const ids = (svg) => [...svg.querySelectorAll("[id]")].map((e) => e.id);
+      check("ids differ between widgets", !ids(demo).some((id) => ids(other).includes(id)));
+      const clip = demo.querySelector("image").getAttribute("clip-path").slice(5, -1);
+      check("clip paths point at their own ids", demo.querySelector(`[id="${clip}"]`) !== null);
+
+      clean(wrap('<rect onload="window.pwned=1" onclick="window.pwned=1" width="1" height="1"/>'));
+      clean(wrap('<script>window.pwned=1<\/script><rect width="1" height="1"/>'));
+      clean(wrap('<image href="x" onerror="window.pwned=1" width="1" height="1"/>'));
+      clean(`<svg ${NS} onload="window.pwned=1">${STYLE}</svg>`);
+      clean(wrap('<foreignObject><img xmlns="http://www.w3.org/1999/xhtml" src="x" onerror="window.pwned=1"/></foreignObject>'));
+      clean(wrap('<a href="#"><set attributeName="href" to="javascript:window.pwned=1"/><text>x</text></a>'));
+
+      const link = (href) => clean(wrap(`<a href="${href}"><text>x</text></a>`)).querySelector("a").getAttribute("href");
+      check("http links are kept", link("https://atsu.moe/manga/x") === "https://atsu.moe/manga/x");
+      check("javascript links are dropped", link("javascript:window.pwned=1") === null);
+      check("padded javascript links are dropped", link(" javascript:window.pwned=1") === null);
+      const xlink = clean(wrap('<a xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="javascript:window.pwned=1"><text>x</text></a>'));
+      check("xlink links are dropped", !xlink.querySelector("a").hasAttributes());
+
+      const img = (href) => clean(wrap(`<image href="${href}" width="1" height="1"/>`)).querySelector("image").getAttribute("href");
+      check("embedded covers are kept", img("data:image/jpeg;base64,AAAA") === "data:image/jpeg;base64,AAAA");
+      check("remote images are dropped", img("https://example.com/track.png") === null);
+      check("svg data images are dropped", img("data:image/svg+xml;base64,AAAA") === null);
+
+      check("unknown elements are dropped", clean(wrap("<foreignObject/><circle r=\"1\"/>")).querySelector("foreignObject, circle") === null);
+      check("bad fill is dropped", clean(wrap('<rect fill="url(https://example.com/x)" width="1" height="1"/>')).querySelector("rect").getAttribute("fill") === null);
+      check("styles reaching outside are refused", clean(wrap("", "<style>body{display:none}</style>")) === null);
+      check("styles loading urls are refused", clean(wrap("", "<style>.atsu-shelf{background:url(https://example.com/x)}</style>")) === null);
+      check("style imports are refused", clean(wrap("", "<style>@import 'https://example.com/x.css';</style>")) === null);
+      check("escaped styles are refused", clean(wrap("", "<style>.atsu-shelf{background:\\75rl(x)}</style>")) === null);
+      check("broken xml is refused", clean("<svg><rect></svg>") === null);
+      check("non-svg roots are refused", clean('<html xmlns="http://www.w3.org/1999/xhtml"><body/></html>') === null);
+
+      await atsuShelf.load();
+      const swapped = document.querySelector("#host > svg");
+      check("img is replaced by the inline svg", swapped !== null && !document.querySelector("#host img"));
+      check("alt text becomes the label", swapped?.getAttribute("aria-label") === "What I'm reading");
+      check("host colours apply", getComputedStyle(swapped.querySelector(".t")).fill === "rgb(231, 84, 128)");
+      check("it scales down on narrow screens", getComputedStyle(swapped).maxWidth === "100%");
+
+      await new Promise((r) => setTimeout(r, 300));
+      check("nothing hostile ran", window.pwned === undefined);
+    } catch (e) {
+      results.push(`FAIL threw ${e}`);
+    }
+    const failed = results.filter((r) => r.startsWith("FAIL")).length;
+    document.getElementById("results").textContent = results.join("\n");
+    document.title = failed ? `FAIL ${failed}` : `PASS ${results.length}`;
+  })();
+</script>

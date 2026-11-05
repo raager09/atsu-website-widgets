@@ -325,3 +325,13 @@ fn demo_is_deterministic() {
     let render_demo = || render(&demo::books(), &Options::default());
     assert_eq!(render_demo(), render_demo());
 }
+
+#[test]
+fn committed_demo_svg_is_current() {
+    let path = concat!(env!("CARGO_MANIFEST_DIR"), "/embed/demo.svg");
+    let committed = std::fs::read_to_string(path).unwrap().replace("\r\n", "\n");
+    assert!(
+        committed == render(&demo::books(), &Options::default()),
+        "embed/demo.svg is out of date; run: cargo run -- draw --demo --out embed/demo.svg"
+    );
+}

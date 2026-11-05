@@ -1,10 +1,10 @@
 # atsu-website-widgets
 
-`atsu-shelf` turns your recent [atsu.moe](https://atsu.moe) reading into a row of cover cards for your GitHub profile or your own website.
+`atsu-website-widgets` turns your recent [atsu.moe](https://atsu.moe) reading into a row of cover cards for your GitHub profile or your own website.
 
 Not affiliated with atsu.moe or AniList. The widget shows your recent reading, including titles and chapters, to anyone who can see the page it's on.
 
-Reading from atsu.moe and the GitHub Action that refreshes the file are still being built. For now, `atsu-shelf draw --demo` writes the demo shelf.
+Reading from atsu.moe and the GitHub Action that refreshes the file are still being built. For now, `atsu-website-widgets draw --demo` writes the demo shelf.
 
 ## Embedding
 
@@ -28,20 +28,20 @@ GitHub serves raw SVG files as images and allows other sites to fetch them, so t
 
 ### Matching your site's colours
 
-Add `data-atsu-shelf` to the image, then load the script. Copy [`embed/atsu-shelf.js`](embed/atsu-shelf.js) into your site; it has no dependencies.
+Add `data-atsu-website-widgets` to the image, then load the script. Copy [`embed/atsu-website-widgets.js`](embed/atsu-website-widgets.js) into your site; it has no dependencies.
 
 ```html
-<img data-atsu-shelf src="https://raw.githubusercontent.com/YOU/REPO/main/shelf.svg" alt="What I'm reading">
-<script src="/atsu-shelf.js" defer></script>
+<img data-atsu-website-widgets src="https://raw.githubusercontent.com/YOU/REPO/main/shelf.svg" alt="What I'm reading">
+<script src="/atsu-website-widgets.js" defer></script>
 ```
 
 The script fetches the SVG and places it directly in your page, so your CSS can colour it. Set these on the image's parent or any element above it:
 
 ```css
 .reading {
-  --atsu-shelf-heading: #1f2328;
-  --atsu-shelf-title: #e75480;
-  --atsu-shelf-background: transparent;
+  --atsu-website-widgets-heading: #1f2328;
+  --atsu-website-widgets-title: #e75480;
+  --atsu-website-widgets-background: transparent;
 }
 ```
 
